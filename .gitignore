@@ -1,0 +1,20 @@
+# WireGuard keys
+*.key
+*.conf
+!docker/docker-compose.yml
+
+# Environment files
+.env
+
+# SSL certificates
+nginx/certs/
+
+# Grafana data
+monitoring/grafana/data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Ansible
+*.retry
