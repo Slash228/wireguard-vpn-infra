@@ -1,0 +1,61 @@
+---
+- name: Remove a VPN user
+  hosts: vpn-server
+  become: true
+
+  vars:
+    vpn_dir: /home/ubuntu/vpn
+    username: "{{ user | default('') }}"
+
+  tasks:
+    - name: Check username provided
+      fail:
+        msg: "Provide username with -e user=NAME"
+      when: username == ""
+
+    - name: Check user exists
+      stat:
+        path: "{{ vpn_dir }}/wireguard-config/peer_{{ username }}"
+      register: user_exists
+
+    - name: Fail if user doesn't exist
+      fail:
+        msg: "User {{ username }} does not exist"
+      when: not user_exists.stat.exists
+
+    - name: Read current PEERS value
+      shell: "grep -oP 'PEERS=\\K.*' {{ vpn_dir }}/docker-compose.yml"
+      register: current_peers
+      changed_when: false
+
+    - name: Remove user from PEERS list
+      set_fact:
+        new_peers: "{{ current_peers.stdout.split(',') | reject('equalto', username) | list | join(',') }}"
+
+    - name: Update PEERS in docker-compose.yml
+      replace:
+        path: "{{ vpn_dir }}/docker-compose.yml"
+        regexp: '- PEERS=.*'
+        replace: '- PEERS={{ new_peers }}'
+
+    - name: Delete user config directory
+      file:
+        path: "{{ vpn_dir }}/wireguard-config/peer_{{ username }}"
+        state: absent
+
+    - name: Recreate WireGuard container
+      community.docker.docker_compose_v2:
+        project_src: "{{ vpn_dir }}"
+        state: present
+        recreate: always
+
+    - name: Delete local config file
+      file:
+        path: "{{ playbook_dir }}/../client-configs/{{ username }}.conf"
+        state: absent
+      delegate_to: localhost
+      become: false
+
+    - name: Show success message
+      debug:
+        msg: "User {{ username }} removed"

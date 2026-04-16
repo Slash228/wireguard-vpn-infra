@@ -1,0 +1,66 @@
+---
+- name: Deploy WireGuard VPN infrastructure
+  hosts: vpn-server
+  become: true
+
+  vars:
+    vpn_dir: /home/ubuntu/vpn
+    server_ip: "{{ ansible_host }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Docker and dependencies
+      apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Enable src_valid_mark for WireGuard
+      sysctl:
+        name: net.ipv4.conf.all.src_valid_mark
+        value: "1"
+        state: present
+        reload: yes
+
+    - name: Create VPN directory
+      file:
+        path: "{{ vpn_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ../../docker/docker-compose.yml
+        dest: "{{ vpn_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Start WireGuard stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ vpn_dir }}"
+        state: present
+
+    - name: Wait for WireGuard to generate configs
+      wait_for:
+        path: "{{ vpn_dir }}/wireguard-config/peer1/peer1.conf"
+        timeout: 60

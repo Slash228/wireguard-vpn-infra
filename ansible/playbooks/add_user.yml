@@ -1,0 +1,60 @@
+---
+- name: Add a new VPN user
+  hosts: vpn-server
+  become: true
+
+  vars:
+    vpn_dir: /home/ubuntu/vpn
+    username: "{{ user | default('') }}"
+
+  tasks:
+    - name: Check username provided
+      fail:
+        msg: "Provide username with -e user=NAME"
+      when: username == ""
+
+    - name: Check user doesn't already exist
+      stat:
+        path: "{{ vpn_dir }}/wireguard-config/peer_{{ username }}"
+      register: user_exists
+
+    - name: Fail if user exists
+      fail:
+        msg: "User {{ username }} already exists"
+      when: user_exists.stat.exists
+
+    - name: Read current PEERS value
+      shell: "grep -oP 'PEERS=\\K.*' {{ vpn_dir }}/docker-compose.yml"
+      register: current_peers
+      changed_when: false
+
+    - name: Build new PEERS value
+      set_fact:
+        new_peers: "{{ current_peers.stdout }},{{ username }}"
+
+    - name: Update PEERS in docker-compose.yml
+      replace:
+        path: "{{ vpn_dir }}/docker-compose.yml"
+        regexp: '- PEERS=.*'
+        replace: '- PEERS={{ new_peers }}'
+
+    - name: Recreate WireGuard container
+      community.docker.docker_compose_v2:
+        project_src: "{{ vpn_dir }}"
+        state: present
+        recreate: always
+
+    - name: Wait for new peer config
+      wait_for:
+        path: "{{ vpn_dir }}/wireguard-config/peer_{{ username }}/peer_{{ username }}.conf"
+        timeout: 90
+
+    - name: Fetch user config to local machine
+      fetch:
+        src: "{{ vpn_dir }}/wireguard-config/peer_{{ username }}/peer_{{ username }}.conf"
+        dest: "{{ playbook_dir }}/../client-configs/{{ username }}.conf"
+        flat: yes
+
+    - name: Show success message
+      debug:
+        msg: "User {{ username }} created. Config saved to ansible/client-configs/{{ username }}.conf"

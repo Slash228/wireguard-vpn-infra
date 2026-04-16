@@ -1,0 +1,88 @@
+---
+- name: Harden VPN server
+  hosts: vpn-server
+  become: true
+
+  tasks:
+    - name: Install security packages
+      apt:
+        name:
+          - ufw
+          - fail2ban
+        state: present
+        update_cache: yes
+
+    - name: Allow SSH through UFW
+      ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+
+    - name: Allow WireGuard through UFW
+      ufw:
+        rule: allow
+        port: "51820"
+        proto: udp
+
+    - name: Allow HTTPS through UFW (for Grafana later)
+      ufw:
+        rule: allow
+        port: "443"
+        proto: tcp
+
+    - name: Set UFW default policies
+      ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+      loop:
+        - { direction: incoming, policy: deny }
+        - { direction: outgoing, policy: allow }
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Configure Fail2ban for SSH
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [sshd]
+          enabled = true
+          port = 22
+          maxretry = 3
+          bantime = 3600
+          findtime = 600
+        mode: "0644"
+
+    - name: Enable and start Fail2ban
+      service:
+        name: fail2ban
+        state: restarted
+        enabled: yes
+
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Disable SSH root login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+
+    - name: Restart SSH service
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Show hardening summary
+      debug:
+        msg:
+          - "UFW enabled: ports 22 (SSH), 51820 (WireGuard), 443 (HTTPS) allowed"
+          - "Fail2ban protecting SSH from brute force"
+          - "SSH password authentication disabled"
+          - "Root SSH login disabled"
