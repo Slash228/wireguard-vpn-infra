@@ -1,0 +1,18 @@
+route:
+  receiver: telegram
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      - bot_token: "8561598591:AAFpCWCxNZiCEBeZfdH4D5HSmUD2EEQFbh8"
+        chat_id: 800055138
+        send_resolved: true
+        parse_mode: HTML
+        message: |
+          <b>{{ .CommonLabels.alertname }}</b>
+          <b>Severity:</b> {{ .CommonLabels.severity }}
+          <b>Summary:</b> {{ .CommonAnnotations.summary }}
+          <b>Description:</b> {{ .CommonAnnotations.description }}
