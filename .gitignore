@@ -6,6 +6,7 @@ docker/wireguard-config/
 !docker/prometheus/prometheus.yml
 !docker/alertmanager/alertmanager.yml
 !docker/grafana/provisioning/**/*.yml
+!nginx/nginx.conf
 
 # Environment files
 .env
