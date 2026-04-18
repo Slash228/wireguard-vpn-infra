@@ -44,7 +44,7 @@ jobs:
 
       - name: Test Nginx config syntax
         run: |
-          docker run --rm -v ${{ github.workspace }}/nginx:/etc/nginx/conf.d:ro nginx:alpine nginx -t -c /etc/nginx/conf.d/nginx.conf
+          docker run --rm -v ${{ github.workspace }}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro nginx:alpine nginx -t
 
   security-check:
     name: Check for Secrets
