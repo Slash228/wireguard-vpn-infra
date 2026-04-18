@@ -30,7 +30,7 @@ groups:
 
       - alert: ServiceDown
         expr: up == 0
-        for: 2m
+        for: 0s
         labels:
           severity: critical
         annotations:

@@ -63,6 +63,7 @@ services:
       - "9090:9090"
     restart: unless-stopped
 
+
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
@@ -72,6 +73,9 @@ services:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     ports:
       - "9093:9093"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     restart: unless-stopped
 
   grafana:
