@@ -33,3 +33,4 @@ wg show wg0 dump | tail -n +2 | while IFS=$'\t' read -r public_key preshared_key
 done
 
 mv "$TMP" "$OUT"
+chmod 644 "$OUT"

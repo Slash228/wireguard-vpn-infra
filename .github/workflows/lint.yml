@@ -20,12 +20,10 @@ jobs:
           python-version: '3.12'
 
       - name: Install Ansible and lint
-        run: |
-          pip install ansible ansible-lint
+        run: pip install ansible ansible-lint
 
       - name: Run Ansible Lint
-        run: |
-          ansible-lint ansible/playbooks/*.yml
+        run: ansible-lint ansible/playbooks/*.yml
 
   validate-compose:
     name: Validate Docker Compose
@@ -35,8 +33,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate docker-compose.yml
-        run: |
-          docker compose -f docker/docker-compose.yml config --quiet
+        run: docker compose -f docker/docker-compose.yml config --quiet
 
   validate-nginx:
     name: Validate Nginx Config
@@ -47,7 +44,7 @@ jobs:
 
       - name: Test Nginx config syntax
         run: |
-          docker run --rm -v ${{ github.workspace }}/nginx/nginx.conf:/etc/nginx/nginx.conf:ro nginx:alpine nginx -t
+          docker run --rm -v ${{ github.workspace }}/nginx:/etc/nginx/conf.d:ro nginx:alpine nginx -t -c /etc/nginx/conf.d/nginx.conf
 
   security-check:
     name: Check for Secrets
@@ -59,7 +56,7 @@ jobs:
       - name: Check for private keys
         run: |
           echo "Checking for private keys in repository..."
-          if find . -name "privatekey-*" -o -name "presharedkey-*" | grep -q .; then
+          if find . -path ./.git -prune -o \( -name "privatekey-*" -o -name "presharedkey-*" \) -print | grep -q .; then
             echo "ERROR: Private keys found in repository!"
             exit 1
           fi
