@@ -24,10 +24,34 @@
         port: "51820"
         proto: udp
 
-    - name: Allow HTTPS through UFW (for Grafana later)
+    - name: Allow HTTPS through UFW (for Nginx)
       ufw:
         rule: allow
         port: "443"
+        proto: tcp
+
+    - name: Allow HTTP through UFW (for Nginx)
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+    - name: Allow Grafana through UFW
+      ufw:
+        rule: allow
+        port: "3000"
+        proto: tcp
+
+    - name: Allow Prometheus through UFW
+      ufw:
+        rule: allow
+        port: "9090"
+        proto: tcp
+
+    - name: Allow Alertmanager through UFW
+      ufw:
+        rule: allow
+        port: "9093"
         proto: tcp
 
     - name: Set UFW default policies
@@ -82,7 +106,7 @@
     - name: Show hardening summary
       debug:
         msg:
-          - "UFW enabled: ports 22 (SSH), 51820 (WireGuard), 443 (HTTPS) allowed"
+          - "UFW enabled: ports 22 (SSH), 51820 (WireGuard), 443 (HTTPS), 3000 (Grafana), 9090 (Prometheus), 9093 (Alertmanager) allowed"
           - "Fail2ban protecting SSH from brute force"
           - "SSH password authentication disabled"
           - "Root SSH login disabled"

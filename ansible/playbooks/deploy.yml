@@ -39,13 +39,22 @@
         state: present
         reload: yes
 
-    - name: Create VPN directory
+    - name: Create VPN directory structure
       file:
-        path: "{{ vpn_dir }}"
+        path: "{{ vpn_dir }}/{{ item }}"
         state: directory
         owner: ubuntu
         group: ubuntu
         mode: "0755"
+      loop:
+        - ""
+        - prometheus
+        - alertmanager
+        - grafana/provisioning/datasources
+        - grafana/provisioning/dashboards
+        - scripts
+        - textfile_collector
+        - nginx
 
     - name: Copy docker-compose.yml
       copy:
@@ -55,7 +64,83 @@
         group: ubuntu
         mode: "0644"
 
-    - name: Start WireGuard stack
+    - name: Create .env file with server IP
+      copy:
+        content: "SERVER_IP={{ server_ip }}"
+        dest: "{{ vpn_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0600"
+
+    - name: Copy Prometheus config
+      copy:
+        src: "../../docker/prometheus/{{ item }}"
+        dest: "{{ vpn_dir }}/prometheus/{{ item }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      loop:
+        - prometheus.yml
+        - alerts.yml
+
+    - name: Copy Alertmanager config
+      copy:
+        src: ../../docker/alertmanager/alertmanager.yml
+        dest: "{{ vpn_dir }}/alertmanager/alertmanager.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Copy Grafana datasource config
+      copy:
+        src: ../../docker/grafana/provisioning/datasources/datasource.yml
+        dest: "{{ vpn_dir }}/grafana/provisioning/datasources/datasource.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Copy Grafana dashboard provisioning config
+      copy:
+        src: ../../docker/grafana/provisioning/dashboards/dashboard.yml
+        dest: "{{ vpn_dir }}/grafana/provisioning/dashboards/dashboard.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Copy Grafana dashboard JSON
+      copy:
+        src: ../../docker/grafana/provisioning/dashboards/dashboard1.json
+        dest: "{{ vpn_dir }}/grafana/provisioning/dashboards/dashboard1.json"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Copy WireGuard metrics script
+      copy:
+        src: ../../docker/scripts/wg_metrics.sh
+        dest: "{{ vpn_dir }}/scripts/wg_metrics.sh"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: Copy Nginx config
+      copy:
+        src: ../../nginx/nginx.conf
+        dest: "{{ vpn_dir }}/nginx/nginx.conf"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+
+    - name: Create empty metrics file
+      copy:
+        content: ""
+        dest: "{{ vpn_dir }}/textfile_collector/wireguard.prom"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+        force: no
+
+    - name: Start full stack
       community.docker.docker_compose_v2:
         project_src: "{{ vpn_dir }}"
         state: present
@@ -64,3 +149,16 @@
       wait_for:
         path: "{{ vpn_dir }}/wireguard-config/peer1/peer1.conf"
         timeout: 60
+
+    - name: Wait for Grafana to start
+      wait_for:
+        port: 3000
+        timeout: 60
+
+    - name: Show deployment summary
+      debug:
+        msg:
+          - "WireGuard VPN running on port 51820"
+          - "Grafana available at http://{{ server_ip }}:3000 (admin/admin123)"
+          - "Prometheus available at http://{{ server_ip }}:9090"
+          - "Alertmanager available at http://{{ server_ip }}:9093"

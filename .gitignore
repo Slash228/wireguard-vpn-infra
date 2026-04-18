@@ -1,7 +1,11 @@
-# WireGuard keys
+# WireGuard keys and configs (NEVER commit private keys)
+docker/wireguard-config/
 *.key
 *.conf
 !docker/docker-compose.yml
+!docker/prometheus/prometheus.yml
+!docker/alertmanager/alertmanager.yml
+!docker/grafana/provisioning/**/*.yml
 
 # Environment files
 .env
@@ -12,9 +16,16 @@ nginx/certs/
 # Grafana data
 monitoring/grafana/data/
 
+# Prometheus data
+prometheus_data/
+
 # OS files
 .DS_Store
 Thumbs.db
 
 # Ansible
 *.retry
+ansible/client-configs/
+
+# Textfile collector (generated metrics)
+docker/textfile_collector/*.prom
