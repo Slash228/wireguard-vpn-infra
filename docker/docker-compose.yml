@@ -9,7 +9,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Amsterdam
-      - SERVERURL=${SERVER_IP:-192.168.64.7}
+      - SERVERURL=${SERVER_IP:-YOUR_VM_IP}
       - SERVERPORT=51820
       - PEERS=3
       - PEERDNS=1.1.1.1
