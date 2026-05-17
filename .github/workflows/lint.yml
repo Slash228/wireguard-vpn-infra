@@ -11,16 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ansible collections
+      - name: Install dependencies
         run: |
-          pip install ansible
+          pip install ansible ansible-lint
           ansible-galaxy collection install community.docker ansible.posix
 
       - name: Ansible Lint
-        uses: ansible/ansible-lint@v6
-        with:
-          setup_python: true
-          working_directory: ansible/
+        run: |
+          cd ansible && ansible-lint playbooks/
 
       - name: Validate Docker Compose
         run: |
