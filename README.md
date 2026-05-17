@@ -263,8 +263,3 @@ GitHub Actions runs on every push/PR to main:
 
 **`ansible` command not found:** Run `source ~/ansible-env/bin/activate`.
 
-## Team
-
-- Member 1 — Infrastructure & VPN (Docker, WireGuard, Nginx)
-- Member 2 — Automation & Security (Ansible, UFW, Fail2ban)
-- Member 3 — Monitoring & Alerting (Prometheus, Grafana, Alertmanager)
