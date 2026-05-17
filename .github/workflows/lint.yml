@@ -28,6 +28,12 @@ jobs:
         run: |
           sed 's/grafana:3000/127.0.0.1:3000/g; s/prometheus:9090/127.0.0.1:9090/g' \
             nginx/nginx.conf > /tmp/nginx-ci.conf
+          mkdir -p /tmp/ssl
+          openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
+            -keyout /tmp/ssl/nginx.key \
+            -out /tmp/ssl/nginx.crt \
+            -subj "/CN=localhost"
           docker run --rm \
             -v "/tmp/nginx-ci.conf:/etc/nginx/nginx.conf:ro" \
+            -v "/tmp/ssl:/etc/nginx/ssl:ro" \
             nginx:alpine nginx -t
