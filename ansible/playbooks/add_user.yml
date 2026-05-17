@@ -4,7 +4,7 @@
   become: true
 
   vars:
-    vpn_dir: /home/ubuntu/vpn
+    vpn_dir: /home/{{ ansible_user }}/vpn
     username: "{{ user | default('') }}"
 
   tasks:
@@ -12,6 +12,13 @@
       fail:
         msg: "Provide username with -e user=NAME"
       when: username == ""
+
+    - name: Ensure local client-configs directory exists
+      file:
+        path: "{{ playbook_dir }}/../client-configs"
+        state: directory
+      delegate_to: localhost
+      become: false
 
     - name: Check user doesn't already exist
       stat:
@@ -24,7 +31,7 @@
       when: user_exists.stat.exists
 
     - name: Read current PEERS value
-      shell: "grep -oP 'PEERS=\\K.*' {{ vpn_dir }}/docker-compose.yml"
+      shell: 'grep -oP "PEERS=\K.*" {{ vpn_dir }}/docker-compose.yml'
       register: current_peers
       changed_when: false
 

@@ -11,7 +11,7 @@ services:
       - TZ=Europe/Amsterdam
       - SERVERURL=${SERVER_IP:-YOUR_VM_IP}
       - SERVERPORT=51820
-      - PEERS=3
+      - PEERS=peer1,peer2,peer3
       - PEERDNS=1.1.1.1
       - INTERNAL_SUBNET=10.13.13.0/24
     volumes:
@@ -20,12 +20,16 @@ services:
     network_mode: host
     restart: unless-stopped
 
+
   wg-metrics:
-    image: alpine:latest
+    image: alpine:3.21
     container_name: wg-metrics
     network_mode: host
     cap_add:
       - NET_ADMIN
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     volumes:
       - ./scripts/wg_metrics.sh:/wg_metrics.sh:ro
       - ./textfile_collector:/textfile_collector
@@ -63,7 +67,6 @@ services:
       - "9090:9090"
     restart: unless-stopped
 
-
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
@@ -97,8 +100,10 @@ services:
     container_name: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     ports:
-      - "80:80"
+      - "8081:80"
+      - "8443:443"
     depends_on:
       - grafana
       - prometheus

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 OUT="/textfile_collector/wireguard.prom"
 TMP="$(mktemp)"
@@ -14,6 +14,13 @@ echo '# HELP wireguard_latest_handshake_delay_seconds Seconds from the last hand
 echo '# TYPE wireguard_latest_handshake_delay_seconds gauge' >> "$TMP"
 
 NOW="$(date +%s)"
+
+# Если wg0 ещё не создан, пишем пустой файл и выходим
+if ! wg show wg0 dump >/dev/null 2>&1; then
+  mv "$TMP" "$OUT"
+  chmod 644 "$OUT"
+  exit 0
+fi
 
 wg show wg0 dump | tail -n +2 | while IFS=$'\t' read -r public_key preshared_key endpoint allowed_ips latest_handshake rx_bytes tx_bytes persistent_keepalive; do
   if [ -z "${public_key:-}" ]; then

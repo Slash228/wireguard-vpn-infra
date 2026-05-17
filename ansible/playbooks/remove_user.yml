@@ -4,7 +4,7 @@
   become: true
 
   vars:
-    vpn_dir: /home/ubuntu/vpn
+    vpn_dir: /home/{{ ansible_user }}/vpn
     username: "{{ user | default('') }}"
 
   tasks:
@@ -24,7 +24,7 @@
       when: not user_exists.stat.exists
 
     - name: Read current PEERS value
-      shell: "grep -oP 'PEERS=\\K.*' {{ vpn_dir }}/docker-compose.yml"
+      shell: 'grep -oP "PEERS=\K.*" {{ vpn_dir }}/docker-compose.yml'
       register: current_peers
       changed_when: false
 

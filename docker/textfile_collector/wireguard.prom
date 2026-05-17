@@ -6,15 +6,15 @@
 # TYPE wireguard_latest_handshake_seconds gauge
 # HELP wireguard_latest_handshake_delay_seconds Seconds from the last handshake
 # TYPE wireguard_latest_handshake_delay_seconds gauge
-wireguard_received_bytes_total{peer="Sk3CGDb5Q8EFAtUvT0Xe+Whd950Dxq0BhNMWH9gOCWU=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
-wireguard_sent_bytes_total{peer="Sk3CGDb5Q8EFAtUvT0Xe+Whd950Dxq0BhNMWH9gOCWU=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
-wireguard_latest_handshake_seconds{peer="Sk3CGDb5Q8EFAtUvT0Xe+Whd950Dxq0BhNMWH9gOCWU=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
-wireguard_latest_handshake_delay_seconds{peer="Sk3CGDb5Q8EFAtUvT0Xe+Whd950Dxq0BhNMWH9gOCWU=",endpoint="(none)",allowed_ips="10.13.13.2/32"} -1
-wireguard_received_bytes_total{peer="FfHvsw8PYL8J0IcJ/byc2eU3uVuEiIZhTFznkSQ2Jw0=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
-wireguard_sent_bytes_total{peer="FfHvsw8PYL8J0IcJ/byc2eU3uVuEiIZhTFznkSQ2Jw0=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
-wireguard_latest_handshake_seconds{peer="FfHvsw8PYL8J0IcJ/byc2eU3uVuEiIZhTFznkSQ2Jw0=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
-wireguard_latest_handshake_delay_seconds{peer="FfHvsw8PYL8J0IcJ/byc2eU3uVuEiIZhTFznkSQ2Jw0=",endpoint="(none)",allowed_ips="10.13.13.3/32"} -1
-wireguard_received_bytes_total{peer="HI7WEBxTdrzsWeyEz+NwnF2AnLUWiOfSaUYJx/UIDRA=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
-wireguard_sent_bytes_total{peer="HI7WEBxTdrzsWeyEz+NwnF2AnLUWiOfSaUYJx/UIDRA=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
-wireguard_latest_handshake_seconds{peer="HI7WEBxTdrzsWeyEz+NwnF2AnLUWiOfSaUYJx/UIDRA=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
-wireguard_latest_handshake_delay_seconds{peer="HI7WEBxTdrzsWeyEz+NwnF2AnLUWiOfSaUYJx/UIDRA=",endpoint="(none)",allowed_ips="10.13.13.4/32"} -1
+wireguard_received_bytes_total{peer="jS3MUKVZytCc5dDEvWdjOvguCkyL+uS+WjY3cw2z+lQ=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
+wireguard_sent_bytes_total{peer="jS3MUKVZytCc5dDEvWdjOvguCkyL+uS+WjY3cw2z+lQ=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
+wireguard_latest_handshake_seconds{peer="jS3MUKVZytCc5dDEvWdjOvguCkyL+uS+WjY3cw2z+lQ=",endpoint="(none)",allowed_ips="10.13.13.2/32"} 0
+wireguard_latest_handshake_delay_seconds{peer="jS3MUKVZytCc5dDEvWdjOvguCkyL+uS+WjY3cw2z+lQ=",endpoint="(none)",allowed_ips="10.13.13.2/32"} -1
+wireguard_received_bytes_total{peer="XxmfBxCoLxaDi7t+1figGNja7otBA1wiMnd5sUlSzjQ=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
+wireguard_sent_bytes_total{peer="XxmfBxCoLxaDi7t+1figGNja7otBA1wiMnd5sUlSzjQ=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
+wireguard_latest_handshake_seconds{peer="XxmfBxCoLxaDi7t+1figGNja7otBA1wiMnd5sUlSzjQ=",endpoint="(none)",allowed_ips="10.13.13.3/32"} 0
+wireguard_latest_handshake_delay_seconds{peer="XxmfBxCoLxaDi7t+1figGNja7otBA1wiMnd5sUlSzjQ=",endpoint="(none)",allowed_ips="10.13.13.3/32"} -1
+wireguard_received_bytes_total{peer="ylenQvu12CNcZY9lBvn6YX5iSme2Rselhm4UGTz5gUk=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
+wireguard_sent_bytes_total{peer="ylenQvu12CNcZY9lBvn6YX5iSme2Rselhm4UGTz5gUk=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
+wireguard_latest_handshake_seconds{peer="ylenQvu12CNcZY9lBvn6YX5iSme2Rselhm4UGTz5gUk=",endpoint="(none)",allowed_ips="10.13.13.4/32"} 0
+wireguard_latest_handshake_delay_seconds{peer="ylenQvu12CNcZY9lBvn6YX5iSme2Rselhm4UGTz5gUk=",endpoint="(none)",allowed_ips="10.13.13.4/32"} -1

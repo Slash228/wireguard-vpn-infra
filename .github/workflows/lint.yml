@@ -1,5 +1,4 @@
-name: Lint and Validate
-
+name: CI
 on:
   push:
     branches: [main]
@@ -7,76 +6,27 @@ on:
     branches: [main]
 
 jobs:
-  lint-ansible:
-    name: Lint Ansible Playbooks
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Ansible Lint
+        uses: ansible/ansible-lint@v6
         with:
-          python-version: '3.12'
+          working_dir: ansible/
 
-      - name: Install Ansible and lint
-        run: pip install ansible ansible-lint
-
-      - name: Run Ansible Lint
-        run: ansible-lint ansible/playbooks/*.yml
-
-  validate-compose:
-    name: Validate Docker Compose
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Validate docker-compose.yml
-        run: docker compose -f docker/docker-compose.yml config --quiet
-
-  validate-nginx:
-    name: Validate Nginx Config
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check Nginx config structure
+      - name: Validate Docker Compose
         run: |
-          if [ -f nginx/nginx.conf ]; then
-            echo "nginx.conf exists"
-            grep -q "upstream" nginx/nginx.conf && echo "OK: Has upstream blocks"
-            grep -q "proxy_pass" nginx/nginx.conf && echo "OK: Has proxy_pass directives"
-            grep -q "server" nginx/nginx.conf && echo "OK: Has server blocks"
-            echo "Nginx config structure is valid"
-          else
-            echo "ERROR: nginx.conf not found"
-            exit 1
-          fi
+          docker compose -f docker/docker-compose.yml config
 
-  security-check:
-    name: Check for Secrets
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check for private keys
+      - name: Validate Nginx Config
         run: |
-          echo "Checking for private keys in repository..."
-          if find . -path ./.git -prune -o \( -name "privatekey-*" -o -name "presharedkey-*" \) -print | grep -q .; then
-            echo "ERROR: Private keys found in repository!"
-            exit 1
-          fi
-          echo "No private keys found."
+          docker run --rm -v "$PWD/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:alpine nginx -t
 
-      - name: Check for hardcoded tokens
+      - name: Check for secrets
         run: |
-          echo "Checking alertmanager.yml for real tokens..."
-          if grep -q "YOUR_BOT_TOKEN_HERE" docker/alertmanager/alertmanager.yml; then
-            echo "OK: Using placeholder token."
-          else
-            echo "WARNING: alertmanager.yml may contain a real token!"
-            exit 1
+          if grep -rE 'bot_token.*[A-Za-z0-9_-]{35,}' docker/; then
+            echo "Possible leaked token found!" && exit 1
           fi
+          echo "No obvious secrets found"

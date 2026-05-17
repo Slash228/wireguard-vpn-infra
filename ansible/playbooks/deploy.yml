@@ -4,7 +4,7 @@
   become: true
 
   vars:
-    vpn_dir: /home/ubuntu/vpn
+    vpn_dir: /home/{{ ansible_user }}/vpn
     server_ip: "{{ ansible_host }}"
 
   tasks:
@@ -18,11 +18,12 @@
         name:
           - docker.io
           - docker-compose-v2
+          - openssl
         state: present
 
     - name: Add ubuntu user to docker group
       user:
-        name: ubuntu
+        name: "{{ ansible_user }}"
         groups: docker
         append: yes
 
@@ -43,8 +44,8 @@
       file:
         path: "{{ vpn_dir }}/{{ item }}"
         state: directory
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0755"
       loop:
         - ""
@@ -55,29 +56,30 @@
         - scripts
         - textfile_collector
         - nginx
+        - nginx/ssl
 
     - name: Copy docker-compose.yml
       copy:
         src: ../../docker/docker-compose.yml
         dest: "{{ vpn_dir }}/docker-compose.yml"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
 
     - name: Create .env file with server IP
       copy:
         content: "SERVER_IP={{ server_ip }}"
         dest: "{{ vpn_dir }}/.env"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0600"
 
     - name: Copy Prometheus config
       copy:
         src: "../../docker/prometheus/{{ item }}"
         dest: "{{ vpn_dir }}/prometheus/{{ item }}"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
       loop:
         - prometheus.yml
@@ -87,56 +89,75 @@
       copy:
         src: ../../docker/alertmanager/alertmanager.yml
         dest: "{{ vpn_dir }}/alertmanager/alertmanager.yml"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
 
     - name: Copy Grafana datasource config
       copy:
         src: ../../docker/grafana/provisioning/datasources/datasource.yml
         dest: "{{ vpn_dir }}/grafana/provisioning/datasources/datasource.yml"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
 
     - name: Copy Grafana dashboard provisioning config
       copy:
         src: ../../docker/grafana/provisioning/dashboards/dashboard.yml
         dest: "{{ vpn_dir }}/grafana/provisioning/dashboards/dashboard.yml"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
 
     - name: Copy Grafana dashboard JSON
       copy:
         src: ../../docker/grafana/provisioning/dashboards/dashboard1.json
         dest: "{{ vpn_dir }}/grafana/provisioning/dashboards/dashboard1.json"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
 
     - name: Copy WireGuard metrics script
       copy:
         src: ../../docker/scripts/wg_metrics.sh
         dest: "{{ vpn_dir }}/scripts/wg_metrics.sh"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0755"
 
     - name: Copy Nginx config
       copy:
         src: ../../nginx/nginx.conf
         dest: "{{ vpn_dir }}/nginx/nginx.conf"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
+
+    - name: Generate self-signed SSL certificate
+      command: >
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048
+        -keyout {{ vpn_dir }}/nginx/ssl/nginx.key
+        -out {{ vpn_dir }}/nginx/ssl/nginx.crt
+        -subj "/CN={{ server_ip }}"
+      args:
+        creates: "{{ vpn_dir }}/nginx/ssl/nginx.crt"
+
+    - name: Fix SSL certificate ownership
+      file:
+        path: "{{ vpn_dir }}/nginx/ssl/{{ item }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+      loop:
+        - nginx.crt
+        - nginx.key
 
     - name: Create empty metrics file
       copy:
         content: ""
         dest: "{{ vpn_dir }}/textfile_collector/wireguard.prom"
-        owner: ubuntu
-        group: ubuntu
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: "0644"
         force: no
 
@@ -147,7 +168,7 @@
 
     - name: Wait for WireGuard to generate configs
       wait_for:
-        path: "{{ vpn_dir }}/wireguard-config/peer1/peer1.conf"
+        path: "{{ vpn_dir }}/wireguard-config/peer_peer1/peer_peer1.conf"
         timeout: 60
 
     - name: Wait for Grafana to start
@@ -159,6 +180,6 @@
       debug:
         msg:
           - "WireGuard VPN running on port 51820"
-          - "Grafana available at http://{{ server_ip }}:3000 (admin/admin123)"
-          - "Prometheus available at http://{{ server_ip }}:9090"
+          - "Grafana available at https://{{ server_ip }} (admin/admin123)"
+          - "Prometheus available at https://{{ server_ip }}/prometheus/"
           - "Alertmanager available at http://{{ server_ip }}:9093"
