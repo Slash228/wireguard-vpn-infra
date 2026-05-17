@@ -26,4 +26,8 @@ jobs:
 
       - name: Validate Nginx Config
         run: |
-          docker run --rm -v "$PWD/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:alpine nginx -t
+          sed 's/grafana:3000/127.0.0.1:3000/g; s/prometheus:9090/127.0.0.1:9090/g' \
+            nginx/nginx.conf > /tmp/nginx-ci.conf
+          docker run --rm \
+            -v "/tmp/nginx-ci.conf:/etc/nginx/nginx.conf:ro" \
+            nginx:alpine nginx -t
