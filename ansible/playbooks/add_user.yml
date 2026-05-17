@@ -17,6 +17,7 @@
       file:
         path: "{{ playbook_dir }}/../client-configs"
         state: directory
+        mode: "0755"
       delegate_to: localhost
       become: false
 
