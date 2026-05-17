@@ -37,3 +37,8 @@ jobs:
             -v "/tmp/nginx-ci.conf:/etc/nginx/nginx.conf:ro" \
             -v "/tmp/ssl:/etc/nginx/ssl:ro" \
             nginx:alpine nginx -t
+
+      - name: Security Check
+        run: |
+          ! grep -r "PRIVATE KEY" ansible/ docker/ nginx/ || exit 1
+          ! grep -rE "bot[0-9]+:[A-Za-z0-9_-]{35}" docker/ || exit 1
