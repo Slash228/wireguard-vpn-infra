@@ -39,7 +39,7 @@ Automated WireGuard VPN infrastructure with monitoring, alerting, and secure use
 
 ## Requirements
 
-- macOS / Linux / Windows (with WSL2)
+- macOS / Linux
 - Homebrew (macOS) or apt (Linux)
 - Git
 
